@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Casino VIP: Европейская и Американская Рулетка</title>
+<link rel="stylesheet" href="style.css?v=7">
+</head>
+<body>
+
+<div class="casino-wrap">
+  <div class="lobby-box" id="lobbyScreen">
+    <div class="lobby-crown">👑</div>
+    <h1>Royal Casino VIP</h1>
+    <input type="text" id="playerNameInput" class="lobby-input" placeholder="Твоё имя (например, Александр)" maxlength="14">
+    <button type="button" class="btn btn-gold" id="createRoomBtn">1. Создать комнату (Хост)</button>
+    <div class="lobby-divider">— или войти по коду друга —</div>
+    <input type="text" id="roomCodeInput" class="lobby-input" placeholder="4-значный код комнаты" maxlength="4" inputmode="numeric">
+    <button type="button" class="btn btn-blue" id="joinRoomBtn">2. Войти в комнату</button>
+    <button type="button" class="btn btn-gray" id="offlineBtn">Играть одному / на одном экране</button>
+    <div class="lobby-status" id="lobbyStatus">Готово к подключению ✓</div>
+  </div>
+
+  <div class="game-screen" id="gameScreen">
+    <div class="top-bar">
+      <div class="top-left-controls">
+        <div class="room-badge" id="roomCodeBadge" title="Нажми, чтобы скопировать код">Код: ---- 📋</div>
+        <button type="button" class="call-btn no-mic" id="callBtn">🎤 Подключение...</button>
+      </div>
+      <div class="tabs" id="modeTabs">
+        <button type="button" class="tab-btn active" data-mode="EU">Европейская (0)</button>
+        <button type="button" class="tab-btn" data-mode="FR">Французская</button>
+        <button type="button" class="tab-btn" data-mode="US">Американская (00)</button>
+        <button type="button" class="tab-btn" data-mode="3Z">Тройное зеро</button>
+        <button type="button" class="tab-btn" data-mode="MW">Мульти (×3)</button>
+      </div>
+    </div>
+
+    <div class="players-bar" id="playersBar"></div>
+    <div class="status-row" id="resultBanner">Выберите фишку внизу и нажмите на ячейку стола</div>
+
+    <div class="main-arena">
+      <div class="wheels-stage" id="wheelsStage">
+        <div class="wheel-casing">
+          <div class="wheel-pointer"></div>
+          <div class="wheel-track-groove"></div>
+          <div class="deflector def-1"></div><div class="deflector def-2"></div>
+          <div class="deflector def-3"></div><div class="deflector def-4"></div>
+          <div class="ball-track"><div class="ball"></div></div>
+          <div class="wheel-rotor">
+            <div class="nums-ring">
+              <i style="--i:0">0</i><i style="--i:1">32</i><i style="--i:2">15</i><i style="--i:3">19</i>
+              <i style="--i:4">4</i><i style="--i:5">21</i><i style="--i:6">2</i><i style="--i:7">25</i>
+              <i style="--i:8">17</i><i style="--i:9">34</i><i style="--i:10">6</i><i style="--i:11">27</i>
+              <i style="--i:12">13</i><i style="--i:13">36</i><i style="--i:14">11</i><i style="--i:15">30</i>
+              <i style="--i:16">8</i><i style="--i:17">23</i><i style="--i:18">10</i><i style="--i:19">5</i>
+              <i style="--i:20">24</i><i style="--i:21">16</i><i style="--i:22">33</i><i style="--i:23">1</i>
+              <i style="--i:24">20</i><i style="--i:25">14</i><i style="--i:26">31</i><i style="--i:27">9</i>
+              <i style="--i:28">22</i><i style="--i:29">18</i><i style="--i:30">29</i><i style="--i:31">7</i>
+              <i style="--i:32">28</i><i style="--i:33">12</i><i style="--i:34">35</i><i style="--i:35">3</i>
+              <i style="--i:36">26</i>
+            </div>
+            <div class="wheel-hub"><div class="turret"><div class="turret-cap"></div></div></div>
+          </div>
+        </div>
+
+        <div class="wheel-casing extra-wheel">
+          <div class="wheel-pointer"></div>
+          <div class="wheel-track-groove"></div>
+          <div class="ball-track"><div class="ball"></div></div>
+          <div class="wheel-rotor">
+            <div class="nums-ring">
+              <i style="--i:0">0</i><i style="--i:1">32</i><i style="--i:2">15</i><i style="--i:3">19</i>
+              <i style="--i:4">4</i><i style="--i:5">21</i><i style="--i:6">2</i><i style="--i:7">25</i>
+              <i style="--i:8">17</i><i style="--i:9">34</i><i style="--i:10">6</i><i style="--i:11">27</i>
+              <i style="--i:12">13</i><i style="--i:13">36</i><i style="--i:14">11</i><i style="--i:15">30</i>
+              <i style="--i:16">8</i><i style="--i:17">23</i><i style="--i:18">10</i><i style="--i:19">5</i>
+              <i style="--i:20">24</i><i style="--i:21">16</i><i style="--i:22">33</i><i style="--i:23">1</i>
+              <i style="--i:24">20</i><i style="--i:25">14</i><i style="--i:26">31</i><i style="--i:27">9</i>
+              <i style="--i:28">22</i><i style="--i:29">18</i><i style="--i:30">29</i><i style="--i:31">7</i>
+              <i style="--i:32">28</i><i style="--i:33">12</i><i style="--i:34">35</i><i style="--i:35">3</i>
+              <i style="--i:36">26</i>
+            </div>
+            <div class="wheel-hub"><div class="turret"><div class="turret-cap"></div></div></div>
+          </div>
+        </div>
+
+        <div class="wheel-casing extra-wheel">
+          <div class="wheel-pointer"></div>
+          <div class="wheel-track-groove"></div>
+          <div class="ball-track"><div class="ball"></div></div>
+          <div class="wheel-rotor">
+            <div class="nums-ring">
+              <i style="--i:0">0</i><i style="--i:1">32</i><i style="--i:2">15</i><i style="--i:3">19</i>
+              <i style="--i:4">4</i><i style="--i:5">21</i><i style="--i:6">2</i><i style="--i:7">25</i>
+              <i style="--i:8">17</i><i style="--i:9">34</i><i style="--i:10">6</i><i style="--i:11">27</i>
+              <i style="--i:12">13</i><i style="--i:13">36</i><i style="--i:14">11</i><i style="--i:15">30</i>
+              <i style="--i:16">8</i><i style="--i:17">23</i><i style="--i:18">10</i><i style="--i:19">5</i>
+              <i style="--i:20">24</i><i style="--i:21">16</i><i style="--i:22">33</i><i style="--i:23">1</i>
+              <i style="--i:24">20</i><i style="--i:25">14</i><i style="--i:26">31</i><i style="--i:27">9</i>
+              <i style="--i:28">22</i><i style="--i:29">18</i><i style="--i:30">29</i><i style="--i:31">7</i>
+              <i style="--i:32">28</i><i style="--i:33">12</i><i style="--i:34">35</i><i style="--i:35">3</i>
+              <i style="--i:36">26</i>
+            </div>
+            <div class="wheel-hub"><div class="turret"><div class="turret-cap"></div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="board-section">
+        <div class="table-felt" id="tableFelt">
+          <div class="zeros-bar">
+            <div class="spot c-green" data-type="number" data-val="0">0</div>
+            <div class="spot c-green" data-type="number" data-val="00" id="spot00" style="display:none;">00</div>
+            <div class="spot c-green" data-type="number" data-val="000" id="spot000" style="display:none;">000</div>
+          </div>
+          <div class="grid-numbers" id="numbersGrid"></div>
+          <div class="grid-dozens">
+            <div class="spot c-out" data-type="dozen" data-val="1st">1-я (1–12)</div>
+            <div class="spot c-out" data-type="dozen" data-val="2nd">2-я (13–24)</div>
+            <div class="spot c-out" data-type="dozen" data-val="3rd">3-я (25–36)</div>
+          </div>
+          <div class="grid-outside">
+            <div class="spot c-out" data-type="range" data-val="low">1–18</div>
+            <div class="spot c-out" data-type="parity" data-val="even">ЧЁТ</div>
+            <div class="spot c-red" data-type="color" data-val="red">КРАСНОЕ</div>
+            <div class="spot c-black" data-type="color" data-val="black">ЧЁРНОЕ</div>
+            <div class="spot c-out" data-type="parity" data-val="odd">НЕЧЕТ</div>
+            <div class="spot c-out" data-type="range" data-val="high">19–36</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom-controls">
+      <div class="chips-tray" id="chipsTray">
+        <div class="casino-chip chip-10 selected" data-val="10">10</div>
+        <div class="casino-chip chip-25" data-val="25">25</div>
+        <div class="casino-chip chip-100" data-val="100">100</div>
+        <div class="casino-chip chip-500" data-val="500">500</div>
+        <div class="casino-chip chip-1000" data-val="1000">1K</div>
+      </div>
+      <div class="actions-group">
+        <button type="button" class="btn btn-reset" id="resetMyBetsBtn">Сброс моих ставок</button>
+        <button type="button" class="btn btn-spin" id="spinBtn">Крутить!</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="audioBank" style="position:fixed;left:-9999px;width:1px;height:1px;"></div>
+<script src="net.js?v=7"></script>
+<script src="game.js?v=7"></script>
+</body>
+</html>
