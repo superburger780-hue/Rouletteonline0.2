@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Aurelia Gold Casino — VIP Стол</title>
+  <style>
+    :root {
+      --gold-light: #fff3b0;
+      --gold-main: #d4af37;
+      --gold-dark: #7a5c12;
+      --bg-dark: #0a0805;
+      --panel-bg: #18120a;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #291e0e 0%, var(--bg-dark) 100%);
+      color: var(--gold-light);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 4, 2, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+
+    .modal-box {
+      background: var(--panel-bg);
+      border: 2px solid var(--gold-main);
+      border-radius: 16px;
+      padding: 22px;
+      width: 100%;
+      max-width: 390px;
+      text-align: center;
+      box-shadow: 0 0 40px rgba(212, 175, 55, 0.35);
+    }
+
+    .gold-input {
+      width: 100%;
+      padding: 10px 12px;
+      margin: 7px 0;
+      border-radius: 8px;
+      border: 1px solid var(--gold-main);
+      background: #0d0a06;
+      color: var(--gold-light);
+      font-size: 15px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: linear-gradient(180deg, #2e2210 0%, #120d06 100%);
+      border-bottom: 2px solid var(--gold-main);
+      box-shadow: 0 4px 25px rgba(212, 175, 55, 0.25);
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(45deg, #b8860b, #fff8dc, #d4af37);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 1.5px;
+    }
+
+    .mode-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .gold-btn {
+      background: linear-gradient(180deg, var(--gold-light) 0%, var(--gold-main) 50%, var(--gold-dark) 100%);
+      border: 1px solid #fff;
+      color: #140e03;
+      font-weight: bold;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      box-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+    }
+
+    .gold-btn.active { outline: 2px solid #fff; box-shadow: 0 0 15px var(--gold-light); }
+    .gold-btn.danger { background: linear-gradient(180deg, #ff8a80, #c62828); color: #fff; border-color: #ffcdd2; }
+    .gold-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .main-container {
+      display: flex;
+      padding: 12px;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .card {
+      background: var(--panel-bg);
+      border: 2px solid var(--gold-main);
+      border-radius: 16px;
+      padding: 14px;
+      width: 100%;
+      max-width: 540px;
+      box-shadow: inset 0 0 25px rgba(212, 175, 55, 0.12), 0 10px 30px rgba(0, 0, 0, 0.8);
+    }
+
+    canvas {
+      border-radius: 50%;
+      display: block;
+      margin: 0 auto;
+      box-shadow: 0 0 30px rgba(212, 175, 55, 0.45);
+    }
+
+    .board-scroll { overflow-x: auto; padding-bottom: 6px; }
+
+    .table-grid {
+      display: grid;
+      grid-template-columns: 44px repeat(12, minmax(34px, 1fr));
+      gap: 3px;
+      min-width: 480px;
+      margin-bottom: 10px;
+    }
+
+    .cell {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--gold-main);
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 13px;
+      cursor: pointer;
+      position: relative;
+      user-select: none;
+    }
+
+    .cell.red { background: linear-gradient(135deg, #801313, #420505); }
+    .cell.black { background: linear-gradient(135deg, #24201b, #0c0a08); }
+    .cell.green { background: linear-gradient(135deg, #1b5e20, #09260b); }
+
+    .zero-col { grid-column: 1; grid-row: 1 / span 3; display: flex; flex-direction: column; gap: 3px; }
+    .zero-col .cell { flex: 1; }
+
+    .outside-bets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+    .chip-badge {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fff 10%, var(--gold-main) 65%, var(--gold-dark) 100%);
+      color: #000;
+      font-size: 9px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px dashed #fff;
+      pointer-events: none;
+    }
+
+    .voice-controls { display: flex; gap: 8px; margin-top: 8px; }
+    .voice-controls button { flex: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- Окно входа -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-box">
+      <div class="logo" style="font-size: 21px; margin-bottom: 8px;">✦ AURELIA GOLD VIP ✦</div>
+      <p style="font-size: 13px; opacity: 0.85; margin-top: 0;">Приватный стол (до 6 игроков + голосовой звонок)</p>
+      <input type="text" id="inputName" class="gold-input" placeholder="Ваше имя" maxlength="15">
+      <input type="text" id="inputRoom" class="gold-input" placeholder="Код комнаты (например: GOLD77)">
+      <input type="password" id="inputPass" class="gold-input" placeholder="Пароль комнаты (необязательно)">
+      <div id="loginError" style="color: #ffd54f; font-size: 13px; min-height: 20px; margin: 4px 0;"></div>
+
+      <div style="display: flex; gap: 8px; margin-top: 6px;">
+        <button class="gold-btn" id="createBtn" style="flex: 1; padding: 11px;" onclick="startAsHost()">👑 СОЗДАТЬ</button>
+        <button class="gold-btn" id="joinBtn" style="flex: 1; padding: 11px;" onclick="joinAsGuest()">🎲 ВОЙТИ</button>
+      </div>
+    </div>
+  </div>
+
+  <header>
+    <div class="logo">✦ AURELIA GOLD VIP ✦</div>
+    <div class="mode-group">
+      <button id="btn-EU" class="gold-btn active" onclick="requestMode('EU')">Европейская</button>
+      <button id="btn-US" class="gold-btn" onclick="requestMode('US')">Американская</button>
+      <button id="btn-FR" class="gold-btn" onclick="requestMode('FR')">Французская</button>
+    </div>
+    <div style="font-size: 14px;">Баланс: <strong id="balance">10000</strong> 🪙</div>
+  </header>
+
+  <div class="main-container">
+    <div class="card" style="text-align: center;">
+      <canvas id="wheelCanvas" width="300" height="300"></canvas>
+      <div id="statusText" style="margin: 10px 0; font-weight: bold; font-size: 16px;">Сделайте ставку на столе</div>
+      <button class="gold-btn" id="spinBtn" onclick="requestSpin()">КРУТИТЬ БАРАБАН</button>
+      <button class="gold-btn" onclick="clearBets()">Сброс</button>
+    </div>
+
+    <div class="card">
+      <div style="margin-bottom: 8px; display: flex; justify-content: space-between; font-size: 12px;">
+        <span>Фишка: <strong>100 🪙</strong></span>
+        <span id="ruleHint">Европейская (одно зеро)</span>
+      </div>
+      <div class="board-scroll">
+        <div class="table-grid" id="tableGrid"></div>
+      </div>
+      <div class="outside-bets">
+        <div class="cell red" data-bet="RED" onclick="placeBet('RED')">КРАСНОЕ (x2)</div>
+        <div class="cell green" data-bet="EVEN" onclick="placeBet('EVEN')">ЧЁТНОЕ (x2)</div>
+        <div class="cell black" data-bet="BLACK" onclick="placeBet('BLACK')">ЧЁРНОЕ (x2)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin: 0 0 10px 0; border-bottom: 1px solid var(--gold-dark); padding-bottom: 6px; font-size: 16px; display: flex; justify-content: space-between; align-items: center;">
+        <span>Комната <span id="roomTitle"></span> (<span id="playerCount">1</span>/6)</span>
+        <span id="netStatus" style="font-size: 12px; color: #ffd54f;">🟡 Подключение...</span>
+      </h3>
+      <div id="playersList"></div>
+      <button class="gold-btn" style="width: 100%; margin-top: 6px;" onclick="copyRoomLink()">🔗 Скопировать приглашение</button>
+
+      <div class="voice-controls">
+        <button class="gold-btn" id="callBtn" onclick="joinVoiceCall()">📞 Войти в звонок</button>
+        <button class="gold-btn" id="muteBtn" onclick="toggleMute()" disabled>🎙️ Микрофон: ВКЛ</button>
+      </div>
+      <div id="audioContainer"></div>
+    </div>
+  </div>
+
+<script>
+const EU_NUMBERS = "0,32,15,19,4,21,2,25,17,34,6,27,13,36,11,30,8,23,10,5,24,16,33,1,20,14,31,9,22,18,29,7,28,12,35,3,26".split(',').map(Number);
+const US_NUMBERS = "0,28,9,26,30,11,7,20,32,17,5,22,34,15,3,24,36,13,1,00,27,10,25,29,12,8,19,31,18,6,21,33,16,4,23,35,14,2".split(',').map(v => v === '00' ? '00' : Number(v));
+const RED_NUMS = new Set("1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36".split(',').map(Number));
+
+let currentMode = 'EU';
+let wheelNumbers = EU_NUMBERS;
+let balance = 10000;
+let bets = {};
+let wheelAngle = 0;
+let ballAngle = -Math.PI / 2;
+let ballRadius = 124;
+let isSpinning = false;
+let lastSpinId = 0;
+let currentSpinData = null;
+
+let mqttClient = null;
+let isHost = false;
+let hostPassword = '';
+let currentRoomId = '';
+let myName = '';
+const myId = 'u-' + Math.random().toString(36).substring(2, 9);
+const myJoinedAt = Date.now();
+
+const playersMap = new Map();
+let basePrefix = '';
+let joinTimeout = null;
+let hostMetaReceived = false;
+let syncTimer = null;
+let offlineDelayTimer = null;
+
+// Закодированные адреса брокеров (HiveMQ + EMQX)
+const BROKERS = [
+  atob('d3NzOi8vYnJva2VyLmhpdmVtcS5jb206ODg4NC9tcXR0'),
+  atob('d3NzOi8vYnJva2VyLmVtcXguaW86ODA4NC9tcXR0')
+];
+
+const urlParams = new URLSearchParams(window.location.search);
+const linkRoom = urlParams.get('room');
+document.getElementById('inputRoom').value = linkRoom || Math.random().toString(36).substring(2, 7).toUpperCase();
+document.getElementById('inputName').value = 'VIP-' + Math.floor(100 + Math.random() * 900);
+
+function loadScriptWithTimeout(url, ms) {
+  return new Promise((resolve) => {
+    const s = document.createElement('script');
+    let done = false;
+    const t = setTimeout(() => { if (!done) { done = true; resolve(false); } }, ms);
+    s.src = url;
+    s.onload = () => { if (!done) { done = true; clearTimeout(t); resolve(true); } };
+    s.onerror = () => { if (!done) { done = true; clearTimeout(t); resolve(false); } };
+    document.head.appendChild(s);
+  });
+}
+
+async function ensureMqttLibrary() {
+  if (typeof window.mqtt !== 'undefined') return true;
+  const cdns = [
+    atob('aHR0cHM6Ly9jZG5qcy5jbG91ZGZsYXJlLmNvbS9hamF4L2xpYnMvbXF0dC81LjMuNC9tcXR0Lm1pbi5qcw=='),
+    atob('aHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9tcXR0QDUuMy40L2Rpc3QvbXF0dC5taW4uanM=')
+  ];
+  for (let url of cdns) {
+    const ok = await loadScriptWithTimeout(url, 4500);
+    if (ok && typeof window.mqtt !== 'undefined') return true;
+  }
+  return false;
+}
+
+function setLoginStatus(text) {
+  const el = document.getElementById('loginError');
+  if (el) el.innerText = text;
+}
+
+function updateNetBadge(online) {
+  const el = document.getElementById('netStatus');
+  if (!el) return;
+  if (online) {
+    clearTimeout(offlineDelayTimer);
+    el.innerText = '🟢 Онлайн';
+    el.style.color = '#4caf50';
+  } else {
+    clearTimeout(offlineDelayTimer);
+    offlineDelayTimer = setTimeout(() => {
+      if (mqttClient && !mqttClient.connected) {
+        el.innerText = '🔴 Переподключение...';
+        el.style.color = '#ffd54f';
+      }
+    }, 3000);
+  }
+}
+
+function getTotalBetAmount(betObj) {
+  let sum = 0;
+  for (let k in betObj) sum += betObj[k];
+  return sum;
+}
+
+function getActivePlayersList() {
+  const now = Date.now();
+  const list = new Array();
+  playersMap.forEach((p, id) => {
+    if (id === myId || (now - p.lastSeen < 90000)) {
+      list.push(p);
+    }
+  });
+  list.sort((a, b) => (b.isHost ? 1 : 0) - (a.isHost ? 1 : 0) || (a.joinedAt - b.joinedAt));
+  return list.slice(0, 6);
+}
+
+// 1. Создать комнату (Хост)
+async function startAsHost() {
+  myName = document.getElementById('inputName').value.trim() || 'Хост';
+  currentRoomId = (document.getElementById('inputRoom').value.trim() || 'GOLD77').toUpperCase();
+  hostPassword = document.getElementById('inputPass').value;
+  isHost = true;
+
+  setLoginStatus('⏳ Подключение к серверу...');
+  document.getElementById('createBtn').disabled = true;
+  document.getElementById('joinBtn').disabled = true;
+
+  const ok = await connectFastestBroker();
+  document.getElementById('createBtn').disabled = false;
+  document.getElementById('joinBtn').disabled = false;
+
+  if (!ok) {
+    setLoginStatus('❌ Серверы не ответили. Проверьте интернет или отключите VPN.');
+    return;
+  }
+
+  setLoginStatus('');
+  enterTable();
+  publishHostMeta();
+  publishMyCard(true);
+  startHeartbeat();
+}
+
+// 2. Войти в комнату друга (Гость)
+async function joinAsGuest() {
+  myName = document.getElementById('inputName').value.trim() || 'Игрок';
+  currentRoomId = (document.getElementById('inputRoom').value.trim() || '').toUpperCase();
+  isHost = false;
+  hostMetaReceived = false;
+
+  if (!currentRoomId) {
+    setLoginStatus('❌ Введите код комнаты друга!');
+    return;
+  }
+
+  setLoginStatus('⏳ Поиск комнаты #' + currentRoomId + '...');
+  document.getElementById('createBtn').disabled = true;
+  document.getElementById('joinBtn').disabled = true;
+
+  const ok = await connectFastestBroker();
+  if (!ok) {
+    document.getElementById('createBtn').disabled = false;
+    document.getElementById('joinBtn').disabled = false;
+    setLoginStatus('❌ Нет связи с облаком. Проверьте интернет или VPN.');
+    return;
+  }
+
+  clearTimeout(joinTimeout);
+  joinTimeout = setTimeout(() => {
+    if (!hostMetaReceived) {
+      document.getElementById('createBtn').disabled = false;
+      document.getElementById('joinBtn').disabled = false;
+      setLoginStatus('❌ Комната #' + currentRoomId + ' не найдена! Проверьте код.');
+    }
+  }, 6000);
+}
+
+function handleHostMeta(meta) {
+  if (!isHost && !hostMetaReceived && document.getElementById('loginModal').style.display !== 'none') {
+    clearTimeout(joinTimeout);
+    document.getElementById('createBtn').disabled = false;
+    document.getElementById('joinBtn').disabled = false;
+
+    const enteredPass = document.getElementById('inputPass').value;
+    if (meta.password && meta.password !== enteredPass) {
+      setLoginStatus('❌ Неверный пароль от комнаты!');
+      return;
+    }
+    if (getActivePlayersList().length >= 6 && !playersMap.has(myId)) {
+      setLoginStatus('❌ В комнате уже максимум (6 игроков)!');
+      return;
+    }
+
+    hostMetaReceived = true;
+    setLoginStatus('');
+    if (meta.spinData && meta.spinData.spinId) {
+      lastSpinId = meta.spinData.spinId;
+    }
+    applyModeUI(meta.mode || 'EU');
+    enterTable();
+    publishMyCard(true);
+    startHeartbeat();
+    return;
+  }
+
+  if (!isHost && document.getElementById('loginModal').style.display === 'none') {
+    if (meta.mode && meta.mode !== currentMode && !isSpinning) {
+      applyModeUI(meta.mode);
+    }
+    if (meta.spinData && meta.spinData.spinId && meta.spinData.spinId !== lastSpinId) {
+      lastSpinId = meta.spinData.spinId;
+      runSpinAnimation(meta.spinData.winningIndex);
+    }
+  }
+}
+
+function startHeartbeat() {
+  clearInterval(syncTimer);
+  syncTimer = setInterval(() => {
+    if (!mqttClient) return;
+    if (mqttClient.connected) {
+      updateNetBadge(true);
+      publishMyCard(false);
+    }
+  }, 4000);
+}
+
+async function connectFastestBroker() {
+  const loaded = await ensureMqttLibrary();
+  if (!loaded || typeof window.mqtt === 'undefined') return false;
+
+  if (mqttClient && mqttClient.connected) {
+    subscribeRoomWildcard();
+    updateNetBadge(true);
+    return true;
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+    const candidates = new Array();
+
+    const masterTimeout = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        candidates.forEach(c => { try { c.end(true); } catch (e) {} });
+        resolve(false);
+      }
+    }, 6500);
+
+    BROKERS.forEach((url) => {
+      try {
+        const client = window.mqtt.connect(url, {
+          clientId: 'aurelia_' + myId + '_' + Math.floor(Math.random() * 10000),
+          clean: true,
+          keepalive: 50,
+          connectTimeout: 6000,
+          reconnectPeriod: 2500
+        });
+        candidates.push(client);
+
+        client.on('connect', () => {
+          if (settled) {
+            try { client.end(true); } catch (e) {}
+            return;
+          }
+          settled = true;
+          clearTimeout(masterTimeout);
+          mqttClient = client;
+
+          candidates.forEach(c => {
+            if (c !== mqttClient) {
+              try { c.end(true); } catch (e) {}
+            }
+          });
+
+          attachClientListeners(mqttClient);
+          subscribeRoomWildcard();
+          updateNetBadge(true);
+          resolve(true);
+        });
+      } catch (e) {}
+    });
+  });
+}
+
+function attachClientListeners(client) {
+  client.on('connect', () => {
+    updateNetBadge(true);
+    subscribeRoomWildcard();
+    if (currentRoomId && document.getElementById('loginModal').style.display === 'none') {
+      publishMyCard(true);
+      if (isHost) publishHostMeta();
+    }
+  });
+
+  client.on('reconnect', () => updateNetBadge(false));
+  client.on('offline', () => updateNetBadge(false));
+  client.on('error', () => updateNetBadge(false));
+
+  client.on('message', (topic, payload) => {
+    try {
+      const text = payload.toString();
+      if (!text) return;
+      const data = JSON.parse(text);
+
+      if (topic === basePrefix + '/meta') {
+        handleHostMeta(data);
+      } else if (topic.startsWith(basePrefix + '/player/')) {
+        if (data.left) {
+          playersMap.delete(data.id);
+          closePeer(data.id);
+        } else if (data.id && data.id !== myId) {
+          data.lastSeen = Date.now();
+          playersMap.set(data.id, data);
+        }
+        renderPlayersTable();
+        renderAllChipsOnBoard();
+      } else if (topic === basePrefix + '/events') {
+        if (data.from === myId) return;
+        handleEventMessage(data);
+      }
+    } catch (e) {}
+  });
+}
+
+function subscribeRoomWildcard() {
+  basePrefix = 'aurelia/vip/v20/' + currentRoomId;
+  mqttClient.subscribe(basePrefix + '/#', { qos: 0 });
+}
+
+function publishMyCard(withRetain) {
+  const myCard = {
+    id: myId,
+    name: myName,
+    isHost: isHost,
+    joinedAt: myJoinedAt,
+    balance: balance,
+    currentBet: getTotalBetAmount(bets),
+    betsMap: { ...bets },
+    inCall: Boolean(localStream),
+    muted: isMuted,
+    lastSeen: Date.now()
+  };
+  playersMap.set(myId, myCard);
+  renderPlayersTable();
+  renderAllChipsOnBoard();
+
+  if (mqttClient && mqttClient.connected && basePrefix) {
+    if (withRetain) {
+      mqttClient.publish(basePrefix + '/player/' + myId, JSON.stringify(myCard), { qos: 0, retain: true });
+    }
+    sendEvent({ type: 'CARD_LIVE', card: myCard });
+  }
+}
+
+function publishHostMeta() {
+  if (isHost && mqttClient && mqttClient.connected && basePrefix) {
+    const meta = {
+      hostId: myId,
+      password: hostPassword,
+      mode: currentMode,
+      spinData: currentSpinData,
+      updatedAt: Date.now()
+    };
+    mqttClient.publish(basePrefix + '/meta', JSON.stringify(meta), { qos: 0, retain: true });
+  }
+}
+
+function sendEvent(data) {
+  if (mqttClient && mqttClient.connected && basePrefix) {
+    mqttClient.publish(basePrefix + '/events', JSON.stringify({ ...data, from: myId }), { qos: 0 });
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && mqttClient && basePrefix) {
+    if (!mqttClient.connected) {
+      mqttClient.reconnect();
+    } else {
+      subscribeRoomWildcard();
+      publishMyCard(true);
+      if (isHost) publishHostMeta();
+    }
+  }
+});
+
+window.addEventListener('beforeunload', () => {
+  if (mqttClient && mqttClient.connected && basePrefix) {
+    mqttClient.publish(basePrefix + '/player/' + myId, JSON.stringify({ id: myId, left: true }), { qos: 0, retain: true });
+  }
+});
+
+function enterTable() {
+  window.history.replaceState({}, '', `?room=${currentRoomId}`);
+  document.getElementById('roomTitle').innerText = `#${currentRoomId}`;
+  document.getElementById('loginModal').style.display = 'none';
+
+  const spinBtn = document.getElementById('spinBtn');
+  if (!isHost) {
+    spinBtn.disabled = true;
+    spinBtn.innerText = '👑 ЖДЁМ ХОСТА';
+    document.querySelectorAll('.mode-group .gold-btn').forEach(btn => {
+      btn.disabled = true;
+    });
+  } else {
+    spinBtn.disabled = false;
+    spinBtn.innerText = 'КРУТИТЬ БАРАБАН';
+  }
+
+  renderPlayersTable();
+  renderAllChipsOnBoard();
+  drawWheel();
+}
+
+function handleEventMessage(msg) {
+  if (msg.type === 'CARD_LIVE' && msg.card && msg.card.id !== myId) {
+    msg.card.lastSeen = Date.now();
+    playersMap.set(msg.card.id, msg.card);
+    renderPlayersTable();
+    renderAllChipsOnBoard();
+    return;
+  }
+
+  if (!isHost) {
+    if (msg.type === 'MODE_SET' && !isSpinning) {
+      applyModeUI(msg.mode);
+    } else if (msg.type === 'SPIN_GO' && msg.spinId && msg.spinId !== lastSpinId) {
+      lastSpinId = msg.spinId;
+      runSpinAnimation(msg.winningIndex);
+    }
+  }
+
+  if (msg.to === myId) {
+    if (msg.type === 'RTC_OFFER') handleReceiveOffer(msg.from, msg.offer);
+    else if (msg.type === 'RTC_ANSWER') handleReceiveAnswer(msg.from, msg.answer);
+    else if (msg.type === 'RTC_ICE') handleReceiveIce(msg.from, msg.candidate);
+  }
+  if (msg.type === 'VOICE_JOINED' && localStream) {
+    createVoicePeer(msg.from, true);
+  }
+}
+
+function renderPlayersTable() {
+  const activeList = getActivePlayersList();
+  document.getElementById('playerCount').innerText = activeList.length;
+  const list = document.getElementById('playersList');
+
+  let html = `
+    <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
+      <thead>
+        <tr style="border-bottom:1px solid #d4af37; color:#fff3b0;">
+          <th style="padding:6px 4px;">Игрок</th>
+          <th style="padding:6px 4px;">Баланс</th>
+          <th style="padding:6px 4px;">Ставка</th>
+          <th style="padding:6px 4px; text-align:right;">Звонок</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  activeList.forEach((p) => {
+    const isMe = p.id === myId;
+    let voiceIcon = '💬';
+    if (p.inCall) voiceIcon = p.muted ? '🔇' : '🔊';
+
+    html += `
+      <tr style="border-bottom:1px solid rgba(212,175,55,0.25); background:${isMe ? 'rgba(212,175,55,0.12)' : 'transparent'};">
+        <td style="padding:7px 4px; font-weight:${isMe ? 'bold' : 'normal'};">
+          ${p.isHost ? '👑' : '🎲'} ${p.name} ${isMe ? '(Вы)' : ''}
+        </td>
+        <td style="padding:7px 4px; color:#fff3b0;">${p.balance} 🪙</td>
+        <td style="padding:7px 4px; color:${p.currentBet > 0 ? '#4caf50' : '#888'}; font-weight:bold;">
+          ${p.currentBet > 0 ? p.currentBet + ' 🪙' : '—'}
+        </td>
+        <td style="padding:7px 4px; text-align:right;">${voiceIcon}</td>
+      </tr>
+    `;
+  });
+
+  for (let i = activeList.length; i < 6; i++) {
+    html += `
+      <tr style="border-bottom:1px dashed rgba(212,175,55,0.2); opacity:0.45;">
+        <td colspan="4" style="padding:6px 4px;">Место #${i + 1} свободно</td>
+      </tr>
+    `;
+  }
+
+  html += `</tbody></table>`;
+  list.innerHTML = html;
+}
+
+function renderAllChipsOnBoard() {
+  document.querySelectorAll('.chip-badge').forEach(b => b.remove());
+
+  const combinedBets = {};
+  getActivePlayersList().forEach(p => {
+    const map = (p.id === myId) ? bets : (p.betsMap || {});
+    for (let target in map) {
+      if (map[target] > 0) {
+        if (!combinedBets[target]) combinedBets[target] = { total: 0, hasMine: false, hasOthers: false };
+        combinedBets[target].total += map[target];
+        if (p.id === myId) combinedBets[target].hasMine = true;
+        else combinedBets[target].hasOthers = true;
+      }
+    }
+  });
+
+  for (let target in combinedBets) {
+    const cell = document.querySelector(`.cell[data-bet="${target}"]`);
+    if (cell) {
+      const info = combinedBets[target];
+      const badge = document.createElement('div');
+      badge.className = 'chip-badge';
+      badge.innerText = info.total;
+      if (!info.hasMine && info.hasOthers) {
+        badge.style.background = 'radial-gradient(circle, #fff 10%, #4fc3f7 65%, #0277bd 100%)';
+      }
+      cell.appendChild(badge);
+    }
+  }
+}
+
+function requestMode(mode) {
+  if (!isHost || isSpinning) return;
+  applyModeUI(mode);
+  sendEvent({ type: 'MODE_SET', mode });
+  publishHostMeta();
+}
+
+function applyModeUI(mode) {
+  currentMode = mode;
+  wheelNumbers = (mode === 'US') ? US_NUMBERS : EU_NUMBERS;
+  document.querySelectorAll('.mode-group .gold-btn').forEach(b => b.classList.remove('active'));
+  const activeBtn = document.getElementById('btn-' + mode);
+  if (activeBtn) activeBtn.classList.add('active');
+
+  const hints = {
+    'EU': 'Европейская (одно зеро)',
+    'US': 'Американская (0 и 00)',
+    'FR': 'Французская (La Partage: 50% при 0)'
+  };
+  document.getElementById('ruleHint').innerText = hints[mode] || '';
+  buildBoard();
+  renderAllChipsOnBoard();
+  drawWheel();
+}
+
+function buildBoard() {
+  const grid = document.getElementById('tableGrid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const zeroCol = document.createElement('div');
+  zeroCol.className = 'zero-col';
+  zeroCol.appendChild(createCell('0', 'green'));
+  if (currentMode === 'US') zeroCol.appendChild(createCell('00', 'green'));
+  grid.appendChild(zeroCol);
+
+  for (let row = 3; row >= 1; row--) {
+    for (let col = 0; col < 12; col++) {
+      const num = col * 3 + row;
+      grid.appendChild(createCell(String(num), RED_NUMS.has(num) ? 'red' : 'black'));
+    }
+  }
+}
+
+function createCell(label, cls) {
+  const div = document.createElement('div');
+  div.className = `cell ${cls}`;
+  div.setAttribute('data-bet', label);
+  div.innerText = label;
+  div.onclick = () => placeBet(label);
+  return div;
+}
+
+function placeBet(target) {
+  if (isSpinning || balance < 100) return;
+  balance -= 100;
+  bets[target] = (bets[target] || 0) + 100;
+  document.getElementById('balance').innerText = balance;
+  publishMyCard(true);
+}
+
+function clearBets() {
+  if (isSpinning) return;
+  for (let k in bets) balance += bets[k];
+  bets = {};
+  document.getElementById('balance').innerText = balance;
+  publishMyCard(true);
+}
+
+function drawWheel() {
+  const canvas = document.getElementById('wheelCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const cx = 150, cy = 150, r = 132;
+  const arc = (2 * Math.PI) / wheelNumbers.length;
+
+  ctx.clearRect(0, 0, 300, 300);
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 14, 0, 2 * Math.PI);
+  const rimGrad = ctx.createLinearGradient(0, 0, 300, 300);
+  rimGrad.addColorStop(0, '#fff3b0');
+  rimGrad.addColorStop(0.5, '#d4af37');
+  rimGrad.addColorStop(1, '#7a5c12');
+  ctx.fillStyle = rimGrad;
+  ctx.fill();
+
+  wheelNumbers.forEach((num, i) => {
+    const a = wheelAngle + i * arc;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, a, a + arc);
+    ctx.fillStyle = (num === 0 || num === '00') ? '#1b5e20' : (RED_NUMS.has(num) ? '#7a1212' : '#14110d');
+    ctx.fill();
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    ctx.save();
+    ctx.translate(cx + Math.cos(a + arc / 2) * (r - 17), cy + Math.sin(a + arc / 2) * (r - 17));
+    ctx.rotate(a + arc / 2 + Math.PI / 2);
+    ctx.fillStyle = '#fff3b0';
+    ctx.font = 'bold 10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(num), 0, 0);
+    ctx.restore();
+  });
+
+  ctx.beginPath();
+  ctx.arc(cx, cy, 42, 0, 2 * Math.PI);
+  const grad = ctx.createRadialGradient(cx, cy, 4, cx, cy, 42);
+  grad.addColorStop(0, '#fff8dc');
+  grad.addColorStop(0.6, '#d4af37');
+  grad.addColorStop(1, '#5e4308');
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  const bx = cx + Math.cos(ballAngle) * ballRadius;
+  const by = cy + Math.sin(ballAngle) * ballRadius;
+  ctx.beginPath();
+  ctx.arc(bx, by, 6, 0, 2 * Math.PI);
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 5;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+}
+
+function requestSpin() {
+  if (!isHost || isSpinning) return;
+  const winningIndex = Math.floor(Math.random() * wheelNumbers.length);
+  const spinId = Date.now() + Math.floor(Math.random() * 10000);
+  lastSpinId = spinId;
+  currentSpinData = { spinId, winningIndex };
+
+  sendEvent({ type: 'SPIN_GO', winningIndex, spinId });
+  publishHostMeta();
+  runSpinAnimation(winningIndex);
+}
+
+function runSpinAnimation(winningIndex) {
+  if (isSpinning) return;
+  isSpinning = true;
+  if (isHost) document.getElementById('spinBtn').disabled = true;
+  document.getElementById('statusText').innerText = 'Шарик запущен...';
+
+  const arc = (2 * Math.PI) / wheelNumbers.length;
+  const duration = 4500;
+  const startTime = performance.now();
+  const startWheel = wheelAngle;
+  const targetWheel = startWheel + Math.PI * 10;
+
+  const finalSectorAngle = targetWheel + winningIndex * arc + arc / 2;
+  const startBall = ballAngle;
+  const totalBallDelta = (finalSectorAngle - startBall) - Math.PI * 14;
+
+  function animate(now) {
+    const t = Math.min((now - startTime) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+
+    wheelAngle = startWheel + (targetWheel - startWheel) * ease;
+    ballAngle = startBall + totalBallDelta * ease;
+    ballRadius = t < 0.5 ? 124 : 124 - ((t - 0.5) / 0.5) * 26;
+
+    drawWheel();
+    if (t < 1) {
+      requestAnimationFrame(animate);
+    } else {
+      isSpinning = false;
+      if (isHost) document.getElementById('spinBtn').disabled = false;
+      finishRound(wheelNumbers[winningIndex]);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function finishRound(winNum) {
+  let winAmount = 0;
+  const isZero = (winNum === 0 || winNum === '00');
+  const isRed = !isZero && RED_NUMS.has(winNum);
+
+  for (let target in bets) {
+    const amt = bets[target];
+    if (target === String(winNum)) winAmount += amt * 36;
+    else if (target === 'RED' && isRed) winAmount += amt * 2;
+    else if (target === 'BLACK' && !isZero && !isRed) winAmount += amt * 2;
+    else if (target === 'EVEN' && !isZero && winNum % 2 === 0) winAmount += amt * 2;
+    else if (currentMode === 'FR' && winNum === 0 && ['RED', 'BLACK', 'EVEN'].includes(target)) {
+      winAmount += amt * 0.5;
+    }
+  }
+
+  balance += winAmount;
+  document.getElementById('balance').innerText = balance;
+  document.getElementById('statusText').innerText = `Выпало: ${winNum}! Выигрыш: ${winAmount} 🪙`;
+  bets = {};
+  publishMyCard(true);
+}
+
+let localStream = null;
+let isMuted = false;
+const peers = {};
+const rtcConfig = {
+  iceServers: [
+    { urls: 'stun:google.com' },
+    { urls: 'stun:stun.yandex.ru:3478' }
+  ]
+};
+
+async function joinVoiceCall() {
+  if (localStream) return;
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    isMuted = false;
+    document.getElementById('callBtn').innerText = '🟢 В звонке';
+    document.getElementById('callBtn').disabled = true;
+    document.getElementById('muteBtn').disabled = false;
+
+    sendEvent({ type: 'VOICE_JOINED' });
+    publishMyCard(true);
+  } catch (e) {
+    alert('Разрешите доступ к микрофону в настройках браузера.');
+  }
+}
+
+function createVoicePeer(remoteId, initiator) {
+  if (peers[remoteId]) return peers[remoteId];
+  const pc = new RTCPeerConnection(rtcConfig);
+  peers[remoteId] = pc;
+
+  if (localStream) {
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+  }
+
+  pc.onicecandidate = (e) => {
+    if (e.candidate) sendEvent({ type: 'RTC_ICE', to: remoteId, candidate: e.candidate });
+  };
+
+  pc.ontrack = (e) => {
+    let audio = document.getElementById('audio-' + remoteId);
+    if (!audio) {
+      audio = document.createElement('audio');
+      audio.id = 'audio-' + remoteId;
+      audio.autoplay = true;
+      audio.playsInline = true;
+      document.getElementById('audioContainer').appendChild(audio);
+    }
+    audio.srcObject = e.streams.shift();
+  };
+
+  if (initiator) {
+    pc.createOffer().then(offer => {
+      pc.setLocalDescription(offer);
+      sendEvent({ type: 'RTC_OFFER', to: remoteId, offer });
+    });
+  }
+  return pc;
+}
+
+async function handleReceiveOffer(from, offer) {
+  if (!localStream) return;
+  const pc = createVoicePeer(from, false);
+  await pc.setRemoteDescription(new RTCSessionDescription(offer));
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  sendEvent({ type: 'RTC_ANSWER', to: from, answer });
+}
+
+async function handleReceiveAnswer(from, answer) {
+  if (peers[from]) await peers[from].setRemoteDescription(new RTCSessionDescription(answer));
+}
+
+async function handleReceiveIce(from, candidate) {
+  if (peers[from]) await peers[from].addIceCandidate(new RTCIceCandidate(candidate));
+}
+
+function closePeer(remoteId) {
+  if (peers[remoteId]) {
+    peers[remoteId].close();
+    delete peers[remoteId];
+  }
+  const el = document.getElementById('audio-' + remoteId);
+  if (el) el.remove();
+}
+
+function toggleMute() {
+  if (!localStream) return;
+  isMuted = !isMuted;
+  localStream.getAudioTracks().forEach(t => { t.enabled = !isMuted; });
+
+  const btn = document.getElementById('muteBtn');
+  if (isMuted) {
+    btn.innerText = '🔇 Микрофон: ВЫКЛ';
+    btn.classList.add('danger');
+  } else {
+    btn.innerText = '🎙️ Микрофон: ВКЛ';
+    btn.classList.remove('danger');
+  }
+  publishMyCard(true);
+}
+
+function copyRoomLink() {
+  const baseUrl = window.location.href.split('?').shift();
+  const link = baseUrl + '?room=' + currentRoomId;
+  navigator.clipboard?.writeText(link);
+  alert(`Ссылка скопирована!\nКод комнаты: ${currentRoomId}`);
+}
+
+buildBoard();
+drawWheel();
+</script>
+</body>
+</html>
